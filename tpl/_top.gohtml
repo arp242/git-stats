@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="icon" type="image/png" href="data:">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>git-stats{{if .}} – {{.}}{{end}}</title>
+	<style>
+		:root {
+			--color:        #222;
+			--bg:           #fff;
+			--border-color: #aaa;
+			--link-color:   #00f;
+			--link-hover:   #6491ff;
+			--tip-bg:       #f6f6f6;
+
+			--chart-line:   #f00;
+			--chart-fill:   #ffeaea;
+			--chart-grid:   #aaa;
+		}
+
+		body                { font:16px/1.6em sans-serif; background:#eee; }
+		.page, .center      { margin:auto;  max-width:80rem; }
+		.page               { padding:1rem; box-shadow:0 0 6px rgba(0,0,0,.2); color:var(--color); background:var(--bg); }
+		.page p:first-child { margin-top:0; }
+		footer              { text-align:right; padding:1rem 0 .5rem 0; }
+		a                   { color:var(--link-color); text-decoration:none; transition:color .2s; cursor:pointer; }
+		a:hover             { text-decoration:underline; color:var(--link-hover); }
+		table               { border-collapse:collapse; width:100%; border:1px solid var(--border-color); }
+		thead               { border-bottom:1px solid var(--border-color); }
+		td, th              { padding:.2rem .4rem; border-left:1px solid var(--border-color); }
+		td.n                { text-align:right; }
+		td.c                { text-align:center; }
+		td.nb               { white-space:nowrap; }
+		td.ba               { word-break:break-all; }
+		td.max              { width:100%; }
+		td >.p              { font-size:.8rem; color:#666; position:relative; top:-.4rem; }
+		.tsort th           { cursor:pointer; user-select:none; }
+		.active             { font-weight:bold; }
+		canvas              { width:100%; }
+		#tooltip            { position:absolute; padding:.2rem .5rem; box-shadow:0 0 2px rgba(0,0,0,.4); background:var(--tip-bg); }
+		#label              { position:relative; }
+		#label span         { position:absolute; display:inline-block; transform:rotate(50deg); }
+	</style>
+</head>
+
+<body>

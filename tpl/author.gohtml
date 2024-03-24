@@ -1,0 +1,81 @@
+{{template "_top.gohtml" .Repo.Name}}
+
+<style>
+.lbl     { display:inline-block; min-width:10rem; }
+#commits { display:none; }
+</style>
+
+<div class="center"><a href="/{{.Repo.Name}}">← Back</a></div>
+<div class="page">
+<p>
+	<b title="{{.Repo.ID}}">{{.Repo.Name}} – <a href="{{.Repo.Path}}">{{.Repo.Path}}</a></b><br>
+</p>
+
+<div style="display:flex; gap:1rem">
+	<div><b>Names:</b><br>
+	{{range $n := .Author.Names}}{{$n}}<br>{{end}}
+	</div>
+
+	<div><b>Emails:</b><br>
+	{{range $n := .Author.Emails}}{{$n}}<br>{{end}}
+	</div>
+
+	<div>
+		<b class="lbl">Commits:</b> {{.AuthorStat.Commits |number}}<br>
+		<b class="lbl">Added:</b>   {{.AuthorStat.Added   |number}}<br>
+		<b class="lbl">Removed:</b> {{.AuthorStat.Removed |number}}<br>
+		<b class="lbl">First:</b>   {{.AuthorStat.First.Format "2006-01-02"}}<br>
+		<b class="lbl">Last:</b>    {{.AuthorStat.Last.Format "2006-01-02"}}<br>
+	</div>
+</div>
+
+<div style="display:flex; gap:5px; margin-bottom:4rem; margin-top:2rem;">
+	<div id="guide" style="display:flex; flex-direction:column; justify-content:space-between; text-align:right;">
+		<span id="max"></span>
+		<span id="half"></span>
+		<span>0</span>
+	</div>
+	<div style="height:100px; width:100%">
+		<canvas id="graph" height="100" data-stats='{{.Activity |json}}' data-events='[]'></canvas>
+		<div id="label"></div>
+	</div>
+</div>
+
+<div>Show: <a href="#" id="to_files">Files</a> · <a href="#" id="to_commits">Commits</a></div>
+
+<div id="files">
+<pre>
+<b>{{printf "%7s  %8s %8s   %s" "Commits" "Added" "Removed" "Path"}}</b>
+{{range $f := .AllFiles -}}
+{{printf "%7d  %8s %8s   %s" $f.Commits (cat "+" $f.Added) (cat "-" $f.Removed) $f.Path}}
+{{end}}
+</pre>
+</div>
+
+<div id="commits">
+<pre>
+{{range $c := .Commits -}}
+{{$c.Hash.Link $.Repo.Path}}  {{$c.Date.Format "2006-01-02"}}  <b>{{$c.Subject}}</b>
+{{range $i, $f := $c.Files}}                      {{printf "%6s %6s   %s" (cat "+" (index $c.Added $i)) (cat "-" (index $c.Removed $i)) $f}} 
+{{end}}
+{{end}}
+</pre>
+</div>
+
+</div>
+
+<script>
+	window.to_files.className = 'active'
+	window.to_files.addEventListener('click', function(e) {
+		e.preventDefault();
+		[window.files.style.display, window.commits.style.display] = ['block', 'none'];
+		[window.to_files.className, window.to_commits.className] = ['active', ''];
+	})
+	window.to_commits.addEventListener('click', function(e) {
+		e.preventDefault();
+		[window.files.style.display, window.commits.style.display] = ['none', 'block'];
+		[window.to_files.className, window.to_commits.className] = ['', 'active'];
+	})
+</script>
+
+{{template "_bottom.gohtml" .}}

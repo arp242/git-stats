@@ -1,0 +1,36 @@
+{{template "_top.gohtml" ""}}
+
+<div class="page">
+	<p>
+git-stats displays aggregate statistics for git repos. Please see the
+<a href="https://github.com/arp242/git-stats">README file</a> for limitations
+and caveats.</p>
+<table class="tsort">
+	<thead><tr>
+			<th>Name</th>
+			<th>URL</th>
+			<th class="d">First</th>
+			<th class="d">Last</th>
+			<th class="n">Commits</th>
+			<th class="n">Avg/day</th>
+	</tr></thead>
+	<tbody>
+	{{range $r := .Repos}}<tr>
+		<td><a href="/{{$r.Name}}">{{$r.Name}}</a></td>
+		<td>{{$r.Path}}</td>
+		<td>{{if $r.FirstCommitAt}}{{$r.FirstCommitAt.Format "2006-01-02"}}{{end}}</td>
+		<td>{{if $r.LastCommitAt}}{{$r.LastCommitAt.Format "2006-01-02"}}{{end}}</td>
+		<td class="n">{{$r.Commits |number}}</td>
+		<td class="n">
+			{{/* Note this number is off for repos like Go and angular.js due to
+			     commits with wonky dates. */}}
+			{{if and $r.FirstCommitAt $r.LastCommitAt}}
+				{{printf "%.1f" (div $r.Commits (div ($r.LastCommitAt.Sub $r.FirstCommitAt).Hours 24))}}
+			{{end}}
+		</td>
+	</tr>{{end}}
+</tbody>
+</table>
+</div>
+
+{{template "_bottom.gohtml" .}}

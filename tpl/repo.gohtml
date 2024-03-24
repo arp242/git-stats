@@ -1,0 +1,123 @@
+{{template "_top.gohtml" .Repo.Name}}
+
+<style>
+#orgs, #ev  { display:none; }
+form.active { border-bottom:2px solid blue; padding-bottom:4px; }
+</style>
+
+<div class="center"><a href="/">← Back</a></div>
+<div class="page">
+<nav style="margin-bottom:1rem;">
+	<b title="{{.Repo.ID}}">{{.Repo.Name}} – <a href="{{.Repo.Path}}">{{.Repo.Path}}</a></b><br>
+	{{.NumCommits |number}} commits in total from {{(len .AuthorStats) |number}} authors,
+		from {{.Range.Start.Format "2006-01-02"}} to {{.Range.End.Format "2006-01-02"}}.
+	<br>
+	Show last:
+
+	<a class="{{if2 (eq .Selected "m") "active" ""}}" href="?sel=m&start={{.Month.Format     "2006-01-02"}}">month</a> ·
+	<a class="{{if2 (eq .Selected "h") "active" ""}}" href="?sel=h&start={{.HalfYear.Format  "2006-01-02"}}">half year</a> ·
+	<a class="{{if2 (eq .Selected "y") "active" ""}}" href="?sel=y&start={{.Year.Format      "2006-01-02"}}">year</a> ·
+	<a class="{{if2 (eq .Selected "5") "active" ""}}" href="?sel=5&start={{.FiveYears.Format "2006-01-02"}}">5 years</a> ·
+	<a class="{{if2 (eq .Selected "d") "active" ""}}" href="?sel=d&start={{.Decade.Format    "2006-01-02"}}">decade</a> ·
+	<a class="{{if2 (eq .Selected "" ) "active" ""}}" href="?">all time</a> ·
+	<form method="GET" action="" style="display:inline" class="{{if2 (eq .Selected "c") "active" ""}}">
+		Custom:
+		<input type="hidden" name="sel" value="c">
+		<input type="date" name="start" value="{{.Range.Start.Format "2006-01-02"}}"> –
+		<input type="date" name="end"   value="{{.Range.End.Format "2006-01-02"}}">
+		<button>Go</button>
+	</form>
+</nav>
+
+{{if eq (len .AuthorStats) 0}}
+	<p><br><b>No commits in this time range.</b><br><br></p>
+{{else}}
+	<div style="display:flex; gap:5px; margin-bottom:4rem;">
+		<div id="guide" style="display:flex; flex-direction:column; justify-content:space-between; text-align:right;">
+			<span id="max"></span>
+			<span id="half"></span>
+			<span>0</span>
+		</div>
+		<div style="height:100px; width:100%">
+			<canvas id="graph" height="100" data-stats='{{.Activity |json}}' data-events='{{.Events |json}}'></canvas>
+			<div id="label"></div>
+		</div>
+	</div>
+{{end}}
+
+<div>Show: <a href="#" id="to_people">Commiters</a> · <a href="#" id="to_orgs">Domains</a> · <a href="#" id="to_ev">Events</a></div>
+
+<div id="people">
+<table class="tsort">
+	<thead>
+		<th class="n">Commits</th>
+		<th class="n">Added</th>
+		<th class="n">Removed</th>
+		<th>First</th>
+		<th>Last</th>
+		<th></th>
+	</thead>
+	<tbody>
+	{{$cum := 0}}
+	{{range $i, $s := .AuthorStats}}
+		{{$cum = sum $cum $s.CommitPerc}}
+		<tr title="#{{sum $i 1}} | Cumulative: {{$cum | printf "%.1f"}}% | AuthorID: {{$s.AuthorID}}">
+			<td class="n nb">{{$s.Commits |number}}  <span class="p">{{$s.CommitPerc  |printf "%.1f"}}%</span></td>
+			<td class="n nb">{{$s.Added   |number}}  <span class="p">{{$s.AddedPerc   |printf "%.1f"}}%</span></td>
+			<td class="n nb">{{$s.Removed |number}}  <span class="p">{{$s.RemovedPerc |printf "%.1f"}}%</span></td>
+			<td class="c nb">{{$s.First.Format "2006-01-02"}}</td>
+			<td class="c nb">{{$s.Last.Format "2006-01-02"}}</td>
+			<td class="ba max"><a href="/{{$.Repo.Name}}/{{$s.AuthorID}}/">{{$s.Names}}</a>, {{join $s.Domains " "}}</td>
+		</tr>
+	{{end}}
+</tbody></table>
+</div>
+
+<div id="orgs">
+<p>Authors with more than one domain are listed twice here. For example if
+someone has comitted under both "donald@mcduck-enterprise.com" and
+"donald@duckburg.com" then *all* of their commits will be counted both for
+@mcduck-enterprise.com and @duckburg.com.</p>
+<table class="tsort">
+<thead><tr><th class="n">Commits</th><th style="text-align:left;">Domain</th></tr></thead>
+<tbody>
+	{{range $d := .AuthorStats.Domains}}<tr>
+		<td class="n nb">{{$d.Count |number}}
+			<span class="p">{{printf "%.1f%%" (mult (div $d.Count $.NumCommits) 100)}}</span>
+		</td>
+		<td width="100%">{{$d.Domain}}</td>
+	</tr>{{end}}
+</tbody></table>
+
+</div>
+
+<div id="ev">
+<pre>
+{{range $e := .Events |reverse -}}
+{{$e.Date.Format "2006-01-02"}}  {{if eq $e.Kind 't'}}tag {{else}}fork{{end}}  {{$e.Name}}
+{{end}}
+</pre>
+</div>
+
+</div>
+
+<script>
+	window.to_people.className = 'active'
+	window.to_people.addEventListener('click', function(e) {
+		e.preventDefault();
+		[window.people.style.display, window.orgs.style.display, window.ev.style.display] = ['block', 'none', 'none'];
+		[window.to_people.className, window.to_orgs.className, window.to_ev.className] = ['active', '', ''];
+	})
+	window.to_orgs.addEventListener('click', function(e) {
+		e.preventDefault();
+		[window.people.style.display, window.orgs.style.display, window.ev.style.display] = ['none', 'block', 'none'];
+		[window.to_people.className, window.to_orgs.className, window.to_ev.className] = ['', 'active', ''];
+	})
+	window.to_ev.addEventListener('click', function(e) {
+		e.preventDefault();
+		[window.people.style.display, window.orgs.style.display, window.ev.style.display] = ['none', 'none', 'block'];
+		[window.to_people.className, window.to_orgs.className, window.to_ev.className] = ['', '', 'active'];
+	})
+</script>
+
+{{template "_bottom.gohtml" .}}
