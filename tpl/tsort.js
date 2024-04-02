@@ -15,7 +15,7 @@
 					is_sort  = th.dataset.sort === '1'
 
 				if (num_sort)
-					rows.sort((a, b) => to_i(a.children[col].innerText) < to_i(b.children[col].innerText))
+					rows.sort((a, b) => to_i(b.children[col].innerText) - to_i(a.children[col].innerText))
 				else
 					rows.sort((a, b) => a.children[col].innerText.localeCompare(b.children[col].innerText))
 
