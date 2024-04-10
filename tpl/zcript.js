@@ -58,6 +58,16 @@ let format_date = function(date, plusDays) {
 
 let esc = (s) => new Option(s).innerHTML
 
+let kind_name = (k) => {
+	switch (String.fromCharCode(e.kind)) {
+		case 't': return 'tag'
+		case 'f': return 'fork'
+		case 'l': return 'license change'
+		case 'o': return 'owner change'
+		default:  return 'other'
+	}
+}
+
 let draw_chart = () => {
 	let canvas = window.graph
 	if (!canvas || canvas.dataset.done === 't')
@@ -70,8 +80,11 @@ let draw_chart = () => {
 		return
 
 	let events = {}
-	for (e of JSON.parse(canvas.dataset.events))
-		events[e.date] = `${String.fromCharCode(e.kind) === 't' ? 'tag: ' : 'fork: '} ${e.name}`
+	for (e of JSON.parse(canvas.dataset.events)) {
+		if (String.fromCharCode(e.kind) === 't')
+			continue
+		events[e.date] = `${kind_name(e.kind)}: ${e.name}`
+	}
 
 	// Group charts by week; just the daily stats are too noisy IMO.
 	//
@@ -79,15 +92,24 @@ let draw_chart = () => {
 	// But this is quick and easy for now.
 	let weekly = stats.length > 185
 	if (weekly) {
-		let c = 0
+		let c    = 0,
+			ev   = {},
+			last = ''
 		stats.forEach((s, i) => {
 			if (i % 7 === 0) {
 				stats[i].commits = c
+				last = s.date
+				if (events[s.date])
+					ev[s.date] = events[s.date]
 				c = 0
-			} else
+			} else {
 				c += s.commits
+				if (events[s.date])
+					ev[last] = events[s.date]
+			}
 		})
 		stats = stats.filter((_, i) => i % 7 === 0)
+		events = ev
 	}
 
 	// It's not too uncommon to have an enormously large amount of commits for
@@ -121,26 +143,38 @@ let draw_chart = () => {
 		},
 	})
 
-	let w    = chart.barWidth(),
-		year = (new Date(stats[0].date)).getFullYear(),
-		lbl  = window.label,
-		add  = (y, i) => {
+	let w        = chart.barWidth(),
+		year     = (new Date(stats[0].date)).getFullYear(),
+		lbl_btm  = window.label_bottom,
+		lbl_top  = window.label_top,
+		add      = (y, i) => {
 				let s = document.createElement('span')
 				s.style.left = `${i * w - 10}px`
 				s.innerText = y
-				lbl.appendChild(s)
+				lbl_btm.appendChild(s)
 			},
-		mark = (t, i) => {
-				// TODO: also add something to the top of the chart?
+		mark = (e, i) => {
 				chart.draw(10, 0, 5, 100, function() {
-					ctx.strokeStyle = 'rgba(255, 0, 255, .3)'
-					ctx.fillStyle   = 'rgba(255, 0, 255, .3)'
-					ctx.lineWidth   = chart.barWidth()
+					ctx.strokeStyle = 'rgba(0, 0, 0, .3)'
+					ctx.lineWidth   = Math.max(chart.barWidth(), 3)
 
+					let x = i*chart.barWidth() + chart.barWidth()/2
 					ctx.beginPath()
-					ctx.moveTo(i*chart.barWidth() + ctx.lineWidth/2, 2.5)
-					ctx.lineTo(i*chart.barWidth() + ctx.lineWidth/2, 140)
+					ctx.moveTo(x, 2.5)
+					ctx.lineTo(x, 97)
 					ctx.stroke()
+
+					let s = document.createElement('span')
+					s.style.left = `0px`
+					s.title = e
+					s.innerText = e.substr(e.indexOf(':') + 2)
+					lbl_top.appendChild(s)
+
+					let ww = Math.max(s.scrollWidth, s.offsetWidth, s.clientWidth)
+					s.style.left = `${i*w - ww/2}px`
+
+					if (ww > Math.max(s.scrollWidth, s.offsetWidth, s.clientWidth))
+						s.style.left = `${i*w - ww}px`
 				})
 		}
 	stats.forEach((s, i) => {
@@ -152,7 +186,7 @@ let draw_chart = () => {
 
 		/// Mark forks.
 		let e = events[s.date]
-		if (e && e.kind === 'f')
+		if (e && e.slice(0, 4) !== 'tag:')
 			mark(e, i)
 	})
 
@@ -173,7 +207,7 @@ let draw_chart = () => {
 			return
 
 		let day   = stats[i],
-			event = events[day.date] // TODO: find events for this entire week.
+			event = events[day.date]
 		tip.remove()
 		if (weekly)
 			tip.innerHTML = `${format_date(day.date)} to ${format_date(day.date, 6)} - ${day.commits} commits, ${day.added} added, ${day.removed} removed`

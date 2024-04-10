@@ -32,15 +32,16 @@ form.active { border-bottom:2px solid blue; padding-bottom:4px; }
 {{if eq (len .AuthorStats) 0}}
 	<p><br><b>No commits in this time range.</b><br><br></p>
 {{else}}
-	<div style="display:flex; gap:5px; margin-bottom:4rem;">
+	<div style="display:flex; gap:5px; margin-bottom:4rem; margin-top:1.5rem;">
 		<div id="guide" style="display:flex; flex-direction:column; justify-content:space-between; text-align:right;">
 			<span id="max"></span>
 			<span id="half"></span>
 			<span>0</span>
 		</div>
 		<div style="height:100px; width:100%">
+			<div class="label" id="label_top"></div>
 			<canvas id="graph" height="100" data-stats='{{.Activity |json}}' data-events='{{.Events |json}}'></canvas>
-			<div id="label"></div>
+			<div class="label" id="label_bottom"></div>
 		</div>
 	</div>
 {{end}}
@@ -94,7 +95,7 @@ someone has comitted under both "donald@mcduck-enterprise.com" and
 <div id="ev">
 <pre>
 {{range $e := .Events |reverse -}}
-{{$e.Date.Format "2006-01-02"}}  {{if eq $e.Kind 't'}}tag {{else}}fork{{end}}  {{$e.Name}}
+{{printf "%s  %-14s  %s" ($e.Date.Format "2006-01-02") $e.Kind $e.Name}}
 {{end}}
 </pre>
 </div>

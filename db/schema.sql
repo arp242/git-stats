@@ -50,7 +50,7 @@ create table events (
 	repo_id          int       not null,
 	name             text      not null,
 	date             date      not null,
-	kind             smallint  not null  -- t=tag, f=fork
+	kind             smallint  not null  -- t=tag, f=fork, l=license, o=transfer owner
 );
 create index "events#repo_id" on events(repo_id);
 cluster events using "events#repo_id";

@@ -14,12 +14,34 @@ type Event struct {
 	RepoID  int32     `db:"repo_id" json:"-"`
 	Name    string    `db:"name" json:"name"`
 	Date    time.Time `db:"date" json:"date"`
-	Kind    byte      `db:"kind" json:"kind"`
+	Kind    EventKind `db:"kind" json:"kind"`
+}
+
+type EventKind byte
+
+func (e EventKind) String() string {
+	switch e {
+	case 't':
+		return "tag"
+	case 'f':
+		return "fork"
+	case 'l':
+		return "license change"
+	case 'o':
+		return "owner change"
+	default:
+		return "other"
+	}
 }
 
 func (e *Event) Insert(ctx context.Context) error {
 	err := db2.Insert(ctx, e)
 	return errors.Wrap(err, "Event.Insert")
+}
+
+func (e *Event) Find(ctx context.Context) error {
+	err := zdb.Get(ctx, e, `select * from events where repo_id=? and kind=? and name=?`, e.RepoID, e.Kind, e.Name)
+	return errors.Wrap(err, "Event.Find")
 }
 
 type Events []Event

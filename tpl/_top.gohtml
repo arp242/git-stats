@@ -39,8 +39,10 @@
 		canvas              { width:100%; }
 		form                { display:inline; }
 		#tooltip            { position:absolute; padding:.2rem .5rem; box-shadow:0 0 2px rgba(0,0,0,.4); background:var(--tip-bg); }
-		#label              { position:relative; }
-		#label span         { position:absolute; display:inline-block; transform:rotate(50deg); }
+		.label              { position:relative; }
+		.label span         { position:absolute; display:inline-block; }
+		#label_bottom span  { transform:rotate(50deg); }
+		#label_top span     { top:-1.4rem; cursor:help; background:var(--tip-bg); box-shadow:0 0 2px rgba(0,0,0,.6); padding:0 .2rem; }
 
 		.tsort th                             { cursor:pointer; user-select:none; }
 		.tsort-asc, .tsort-desc               { position:relative; }

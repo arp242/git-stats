@@ -68,6 +68,20 @@ func cmdUpdate(db zdb.DB, cache, path, name string, noFetch, keep bool) error {
 			return err
 		}
 
+		known := findKnown(repo.Path)
+		if known != nil {
+			for _, e := range known {
+				e.RepoID = repo.ID
+				err := e.Find(ctx)
+				if zdb.ErrNoRows(err) {
+					err = e.Insert(ctx)
+				}
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 		dir = filepath.Join(cache, repo.Name)
 		if noFetch {
 			if _, err := os.Stat(dir); err != nil {
