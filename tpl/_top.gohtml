@@ -35,12 +35,22 @@
 		td.ba               { word-break:break-all; }
 		td.max              { width:100%; }
 		td >.p              { font-size:.8rem; color:#666; position:relative; top:-.4rem; }
-		.tsort th           { cursor:pointer; user-select:none; }
 		.active             { font-weight:bold; }
 		canvas              { width:100%; }
+		form                { display:inline; }
 		#tooltip            { position:absolute; padding:.2rem .5rem; box-shadow:0 0 2px rgba(0,0,0,.4); background:var(--tip-bg); }
 		#label              { position:relative; }
 		#label span         { position:absolute; display:inline-block; transform:rotate(50deg); }
+
+		.tsort th                             { cursor:pointer; user-select:none; }
+		.tsort-asc, .tsort-desc               { position:relative; }
+		.tsort-asc::after, .tsort-desc::after { display:block; position:absolute; right:1px; top:-4px; color:#999; }
+		.tsort-asc::after                     { content:"▲"; }
+		.tsort-desc::after                    { content:"▼"; }
+		/*
+		.tsort-asc::after                     { content:"asc"; }
+		.tsort-desc::after                    { content:"desc"; }
+		*/
 	</style>
 </head>
 

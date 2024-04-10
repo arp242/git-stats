@@ -20,7 +20,7 @@ form.active { border-bottom:2px solid blue; padding-bottom:4px; }
 	<a class="{{if2 (eq .Selected "5") "active" ""}}" href="?sel=5&start={{.FiveYears.Format "2006-01-02"}}">5 years</a> ·
 	<a class="{{if2 (eq .Selected "d") "active" ""}}" href="?sel=d&start={{.Decade.Format    "2006-01-02"}}">decade</a> ·
 	<a class="{{if2 (eq .Selected "" ) "active" ""}}" href="?">all time</a> ·
-	<form method="GET" action="" style="display:inline" class="{{if2 (eq .Selected "c") "active" ""}}">
+	<form method="GET" action="" class="{{if2 (eq .Selected "c") "active" ""}}">
 		Custom:
 		<input type="hidden" name="sel" value="c">
 		<input type="date" name="start" value="{{.Range.Start.Format "2006-01-02"}}"> –
@@ -50,7 +50,7 @@ form.active { border-bottom:2px solid blue; padding-bottom:4px; }
 <div id="people">
 <table class="tsort">
 	<thead>
-		<th class="n" data-sort="1">Commits</th>
+		<th class="n">Commits</th>
 		<th class="n">Added</th>
 		<th class="n">Removed</th>
 		<th>First</th>
